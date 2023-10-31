@@ -1,0 +1,302 @@
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+        integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="index.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+        integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+        integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+        integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<!-- Nav -->
+<nav class="navbar navbar-inverse bg-inverse fixed-top bg-faded">
+    <div class="row">
+        <div class="col">
+            <button id="open-cart" type="button" class="btn btn-primary" data-toggle="modal" data-target="#cart">Cart (<span
+                    class="total-count">0</span>)</button><button class="clear-cart btn btn-danger">Clear Cart</button>
+        </div>
+    </div>
+</nav>
+
+
+<!-- Main -->
+<div class="container">
+    <div class="product-list row">
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="cart" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cart</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="show-cart table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody class="show-cart-body">
+
+                    </tbody>
+                </table>
+                <div>Total price: $<span class="total-cart"></span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="validate-cart" type="button" class="btn btn-primary">Order now</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    class Product {
+        constructor(name, price) {
+            this.name = name;
+            this.price = price;
+        }
+
+        toString() {
+
+        }
+    }
+
+    class ProductCart extends Product {
+        constructor(product, count) {
+            super(product.name, product.price)
+            this.count = count;
+        }
+    }
+
+    class ShoppingCart {
+        constructor() {
+            if (localStorage.getItem("shoppingCart")) {
+                this.items = JSON.parse(localStorage.getItem("shoppingCart"))
+            } else {
+                this.items = []
+            }
+        }
+
+        findItemIndexByName(name) {
+            const itemIndex = this.items.findIndex((item) => {
+                return item.name === name
+            })
+            return itemIndex
+        }
+
+        addItem(item, count = 1) {
+            const itemIndex = this.findItemIndexByName(item.name)
+            if (itemIndex < 0) {
+                const cardProduct = new ProductCart(item, count)
+                this.items.push(cardProduct)
+            } else {
+                this.items[itemIndex].count++
+            }
+        }
+
+        removeItem(item, count = 1) {
+            const itemIndex = this.findItemIndexByName(item.name)
+            if (itemIndex < -1) {
+                throw new Error();
+            }
+            this.items.count -= count
+            if (this.items.count <= 0) {
+                this.clearItem(item);
+            }
+        }
+
+        setItemCount(item, count) {
+            const itemIndex = this.findItemIndexByName(item.name)
+            if (itemIndex < -1) {
+                throw new Error();
+            }
+            if (count < 0) {
+                throw new Error();
+            }
+            if (count === 0) {
+                this.removeItem(item)
+            } else {
+                this.items[itemIndex].count = count
+            }
+        }
+
+        clearItem(item) {
+            const itemIndex = this.findItemIndexByName(item.name)
+            if (itemIndex < -1) {
+                throw new Error();
+            }
+            this.items.slice(itemIndex, 1)
+        }
+
+        countItems() {
+            let total = 0
+            this.items.forEach(item => {
+                total += item.count
+            })
+            return total
+        }
+
+        getTotalPrice() {
+            let price = 0;
+            this.items.forEach(item => {
+                price += item.price * item.count
+            })
+            return price;
+        }
+
+        listItems() {
+
+        }
+
+        clear() {
+            this.items = []
+            displayCart()
+        }
+
+        saveCart() {
+            localStorage.setItem('shoppingCart', JSON.stringify(this.items));
+        }
+
+        getCartStripeUrl() {
+            const answer = fetch("https://my.jagger-tracker.com/stripe/create-checkout-session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cart: this.items, mode: 'payment' })
+            })
+            return answer
+        }
+    }
+
+    const getProductsFromStripe = () => {
+        const answer = fetch("https://my.jagger-tracker.com/stripe/products", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        })
+        return answer
+    }
+
+
+    const shoppingCart = new ShoppingCart();
+    const displayCart = () => {
+        $('.total-count').html(shoppingCart.countItems());
+        shoppingCart.saveCart();
+    }
+    displayCart()
+
+    const constructProductList = async () => {
+        const products = await getProductsFromStripe()
+        const productJSON = await products.json();
+        const divProductList = document.getElementsByClassName('product-list')[0];
+
+        for (const product of productJSON) {
+            const divCol = document.createElement('div');
+            divCol.classList.add('col')
+            const divCard = document.createElement('div');
+            divCard.classList.add('card')
+            divCard.style = "width: 20rem;"
+            const img = document.createElement('img');
+            img.classList.add('card-img-top')
+            img.alt = 'Card image cap'
+            img.src = product.image ?? ""
+            const divCardBlock = document.createElement('div');
+            divCardBlock.classList.add('card-block')
+            const title = document.createElement('h4')
+            title.classList.add('card-title')
+            title.textContent = product.name
+            const price = document.createElement('p')
+            price.classList.add('card-text')
+            price.textContent = product.price + product.currency
+            const button = document.createElement('a')
+            button.href = "#"
+            button.setAttribute('data-name', product.metadata ? product.metadata.name : product.name)
+            button.setAttribute('data-price', product.price)
+            button.classList.add("add-to-cart", "btn", "btn-primary")
+            button.onclick = (event) => {
+                addToCart(event)
+            }
+            button.textContent = "Add to cart"
+
+            divProductList.appendChild(divCol)
+            divCol.appendChild(divCard)
+            divCard.appendChild(img)
+            divCard.appendChild(divCardBlock)
+            divCardBlock.appendChild(title)
+            divCardBlock.appendChild(price)
+            divCardBlock.appendChild(button)
+        }
+    }
+    constructProductList()
+
+    const createCardTableProduct = (productCart) => {
+        const tbody = document.getElementsByClassName("show-cart-body")[0]
+        const tr = document.createElement('tr');
+        tbody.appendChild(tr);
+        const image = document.createElement('td');
+        image.textContent = "alt"
+        tr.appendChild(image);
+        const name = document.createElement('td');
+        name.textContent = productCart.name
+        tr.appendChild(name);
+        const price = document.createElement('td');
+        price.textContent = productCart.price
+        tr.appendChild(price);
+        const quantity = document.createElement('td');
+        quantity.textContent = productCart.count
+        tr.appendChild(quantity);
+        const del = document.createElement('td');
+        del.textContent = "delete"
+        tr.appendChild(del)
+    }
+
+    const addToCart = (event) => {
+        event.preventDefault();
+        var name = event.target.getAttribute('data-name');
+        var price = Number(event.target.getAttribute('data-price'));
+        shoppingCart.addItem(new Product(name, price), 1)
+        displayCart()
+    }
+
+    const redirectToStripe = async (event) => {
+        event.preventDefault();
+        const apiRes = await shoppingCart.getCartStripeUrl()
+        const apiResJson = await apiRes.json()
+        window.location.href = apiResJson.url
+    }
+
+    const showCart = document.getElementById('open-cart');
+    showCart.onclick = (event) => {
+        const tbody = document.getElementsByClassName("show-cart-body")[0]
+        tbody.innerHTML = ""
+        shoppingCart.items.forEach((item) => {
+            createCardTableProduct(item);
+        })
+    }
+
+    const clearCart = document.getElementsByClassName('clear-cart')[0];
+    clearCart.onclick = (event) => {
+        shoppingCart.clear();
+    }
+
+    const goToStripe = document.getElementById("validate-cart");
+    goToStripe.onclick = (event) => {
+        redirectToStripe(event)
+    }
+</script>
