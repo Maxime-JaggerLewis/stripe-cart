@@ -176,7 +176,7 @@
         }
 
         getCartStripeUrl() {
-            const answer = fetch("https://dev.jagger-tracker.com/stripe/create-checkout-session", {
+            const answer = fetch("https://api.jagger-tracker.com/stripe/create-checkout-session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ cart: this.items, mode: 'payment' })
@@ -186,7 +186,7 @@
     }
 
     const getProductsFromStripe = () => {
-        const answer = fetch("https://dev.jagger-tracker.com/stripe/products", {
+        const answer = fetch("https://api.jagger-tracker.com/stripe/products?livemode=false", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         })
