@@ -3,7 +3,9 @@ console.log('ui')
 let cart = document.querySelector("#my_button")
 console.log(cart)
 cart.addEventListener('click', () => {
-    let link =  document.querySelector("#contentbis")
-    console.log(link)
-    document.querySelector("#content").appendChild(link.import.body);
+    let elem = document.createElement("object")
+    elem.type = "text/html"
+    elem.data = "content.html"
+    console.log(elem)
+    document.querySelector("#content").appendChild(elem)
    });
