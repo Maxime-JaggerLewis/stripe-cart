@@ -1,0 +1,45 @@
+.cart-img {
+    width: 69px;
+    height: 69px;
+    border-radius: 7px;
+}
+
+.product-cart {
+    border-radius: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.30);
+    background: #FFF;
+}
+
+.product-cart-list {
+    display: flex;
+    padding: 16px 14px 16px 16px;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.quantity{
+    display:flex;
+    width:160px;
+ }
+ 
+ /* it will support chrome and firefox */
+ .quantity input[type=number]::-webkit-inner-spin-button,
+ .quantity input[type=number]::-webkit-outer-spin-button{
+    -webkit-appearance:none;
+ }
+ 
+ .quantity input,.quantity button{
+    width:50px;
+    padding:.5em;
+    font-size:1.2rem;
+    text-align:center;
+    font-weight:900;
+    background:white;
+    border:1px solid #aaa;
+ }
+ 
+ .quantity input{
+    border-left:none;
+    border-right:none;
+ }

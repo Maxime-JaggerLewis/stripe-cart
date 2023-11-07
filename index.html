@@ -2,6 +2,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
         integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="modal.css">
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
         integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
         crossorigin="anonymous"></script>
@@ -18,8 +19,9 @@
 <nav class="navbar navbar-inverse bg-inverse fixed-top bg-faded">
     <div class="row">
         <div class="col">
-            <button id="open-cart" type="button" class="btn btn-primary" data-toggle="modal" data-target="#cart">Cart (<span
-                    class="total-count">0</span>)</button><button class="clear-cart btn btn-danger">Clear Cart</button>
+            <button id="open-cart" type="button" class="btn btn-primary" data-toggle="modal" data-target="#cart">Cart
+                (<span class="total-count">0</span>)</button><button class="clear-cart btn btn-danger">Clear
+                Cart</button>
         </div>
     </div>
 </nav>
@@ -37,31 +39,22 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Cart</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Panier</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <table class="show-cart table">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody class="show-cart-body">
+                <div class="product-cart">
 
-                    </tbody>
-                </table>
-                <div>Total price: $<span class="total-cart"></span></div>
+                </div>
+                <hr />
+                <div>Frais d'activation <span id="activation-fees" class="align-right"></span></div>
+                <hr />
+                <div>Total<span id="total-cart" class="align-right"></span></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="validate-cart" type="button" class="btn btn-primary">Order now</button>
+                <button id="validate-cart" type="button" class="btn btn-primary">Finaliser la commande</button>
             </div>
         </div>
     </div>
@@ -69,19 +62,17 @@
 
 <script type="module">
     class Product {
-        constructor(name, price) {
+        constructor(name, price, image, subscription) {
             this.name = name;
             this.price = price;
-        }
-
-        toString() {
-
+            this.image = image;
+            this.subscription = subscription;
         }
     }
 
     class ProductCart extends Product {
         constructor(product, count) {
-            super(product.name, product.price)
+            super(product.name, product.price, product.image, product.subscription)
             this.count = count;
         }
     }
@@ -110,6 +101,7 @@
             } else {
                 this.items[itemIndex].count++
             }
+            this.saveCart()
         }
 
         removeItem(item, count = 1) {
@@ -168,6 +160,7 @@
 
         clear() {
             this.items = []
+            this.saveCart();
         }
 
         saveCart() {
@@ -217,11 +210,12 @@
             title.textContent = product.name
             const price = document.createElement('p')
             price.classList.add('card-text')
-            price.textContent = product.price + product.currency
+            price.textContent = product.prices[0].price + product.prices[0].currency
             const button = document.createElement('a')
             button.href = "#"
             button.setAttribute('data-name', product.metadata ? product.metadata.name : product.name)
-            button.setAttribute('data-price', product.price)
+            button.setAttribute('data-price', product.prices[0].price)
+            button.setAttribute('data-image', product.image ?? "")
             button.classList.add("add-to-cart", "btn", "btn-primary")
             button.onclick = (event) => {
                 addToCart(event)
@@ -240,31 +234,49 @@
     constructProductList()
 
     const createCardTableProduct = (productCart) => {
-        const tbody = document.getElementsByClassName("show-cart-body")[0]
-        const tr = document.createElement('tr');
-        tbody.appendChild(tr);
-        const image = document.createElement('td');
-        image.textContent = "alt"
-        tr.appendChild(image);
-        const name = document.createElement('td');
-        name.textContent = productCart.name
-        tr.appendChild(name);
-        const price = document.createElement('td');
-        price.textContent = productCart.price
-        tr.appendChild(price);
-        const quantity = document.createElement('td');
-        quantity.textContent = productCart.count
-        tr.appendChild(quantity);
-        const del = document.createElement('td');
-        del.textContent = "delete"
-        tr.appendChild(del)
+        const divProductList = document.querySelector('.product-cart');
+        const divProduct = document.createElement('div')
+        divProduct.classList.add('product-cart-list')
+        divProductList.appendChild(divProduct)
+        const image = document.createElement('img')
+        image.src = productCart.image;
+        image.classList.add('cart-img')
+        const productInfo = document.createElement('div')
+        const name = document.createElement('div')
+        name.textContent = productCart.name;
+        const price = document.createElement('div')
+        price.textContent = productCart.price + " €";
+        const countDiv = document.createElement('div')
+        countDiv.classList.add('quantity')
+        const buttonMinus = document.createElement('button')
+        buttonMinus.textContent = "-"
+        buttonMinus.classList.add('btn', 'minus1')
+        const buttonPlus = document.createElement('button')
+        buttonPlus.classList.add('btn', 'add1')
+        buttonPlus.textContent = "+"
+        const count = document.createElement('input')
+        count.classList.add('quantity')
+        count.setAttribute('id', 'id_form-0-quantity')
+        count.setAttribute('min', '1')
+        count.setAttribute('name', 'form-0-quantity')
+        count.setAttribute('value', productCart.count)
+        count.setAttribute('type', 'number')
+        countDiv.append(buttonMinus)
+        countDiv.append(count)
+        countDiv.append(buttonPlus)
+        divProduct.appendChild(image)
+        divProduct.appendChild(productInfo)
+        productInfo.appendChild(name)
+        productInfo.appendChild(price)
+        divProduct.appendChild(countDiv)
     }
 
     const addToCart = (event) => {
         event.preventDefault();
         var name = event.target.getAttribute('data-name');
         var price = Number(event.target.getAttribute('data-price'));
-        shoppingCart.addItem(new Product(name, price), 1)
+        var img = event.target.getAttribute('data-image');
+        shoppingCart.addItem(new Product(name, price, img), 1)
     }
 
     const redirectToStripe = async (event) => {
@@ -276,11 +288,20 @@
 
     const showCart = document.getElementById('open-cart');
     showCart.onclick = (event) => {
-        const tbody = document.getElementsByClassName("show-cart-body")[0]
-        tbody.innerHTML = ""
+        event.preventDefault();
+        const divProductList = document.querySelector('.product-cart');
+        divProductList.innerHTML = ""
+        let total = shoppingCart.getTotalPrice();
         shoppingCart.items.forEach((item) => {
             createCardTableProduct(item);
+            if (item.name === 'collar_jl2') {
+                const fees = document.querySelector('#activation-fees')
+                fees.textContent = 5 * item.count + "eur"
+                total += (5 * item.count)
+            }
         })
+        const totalSpan = document.querySelector('#total-cart')
+        totalSpan.textContent = total + "eur"
     }
 
     const clearCart = document.getElementsByClassName('clear-cart')[0];
