@@ -168,7 +168,6 @@
 
         clear() {
             this.items = []
-            displayCart()
         }
 
         saveCart() {
@@ -176,7 +175,7 @@
         }
 
         getCartStripeUrl() {
-            const answer = fetch("https://api.jagger-tracker.com/stripe/create-checkout-session", {
+            const answer = fetch("http://0.0.0.0:3000/stripe/create-checkout-session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ cart: this.items, mode: 'payment' })
@@ -186,7 +185,7 @@
     }
 
     const getProductsFromStripe = () => {
-        const answer = fetch("https://api.jagger-tracker.com/stripe/products?livemode=false", {
+        const answer = fetch("http://0.0.0.0:3000/stripe/products?livemode=false", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         })
@@ -195,11 +194,6 @@
 
 
     const shoppingCart = new ShoppingCart();
-    const displayCart = () => {
-        $('.total-count').html(shoppingCart.countItems());
-        shoppingCart.saveCart();
-    }
-    displayCart()
 
     const constructProductList = async () => {
         const products = await getProductsFromStripe()
@@ -271,7 +265,6 @@
         var name = event.target.getAttribute('data-name');
         var price = Number(event.target.getAttribute('data-price'));
         shoppingCart.addItem(new Product(name, price), 1)
-        displayCart()
     }
 
     const redirectToStripe = async (event) => {
