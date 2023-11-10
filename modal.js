@@ -3,6 +3,10 @@ commander.setAttribute("data-toggle", "modal")
 commander.setAttribute("data-target", "#cart")
 
 const body = document.querySelector("body");
+const stylesheet = document.createElement("style")
+stylesheet.innerHTML = ".global-container {margin: auto;margin-top: 10vh;width: 50vw;padding: 20px;background-color: white;border: 10px solid #ffffff;border-radius: 10px;}@media (max-width: 1000px) {.global-container {    width: 90vw;}}.product-pict {height: 100px;width: 4px;}.trash-pict {height: 10px;width: 10px;margin-bottom: 20%;}.product-pict {margin: auto;width: 69px;height: 69px;border-radius: 7px;}.container-receipe,.container-total {display: flex;padding: 16px 14px 16px 16px;flex-direction: row;align-items: flex-end;justify-content: space-between;}.container-receipe {border-top: 2px solid rgba(0, 0, 0, 0.30);border-bottom: 2px solid rgba(0, 0, 0, 0.30);}.container-product-bis {display: flex;align-items: flex-start;flex-direction: row;justify-content: center;}.container-product {display: flex;padding: 16px 14px 16px 16px;flex-direction: row;align-items: center;justify-content: space-between;border-radius: 15px;border: 2px solid rgba(0, 0, 0, 0.30);background: #FFF;gap: 10px;margin-bottom: 1%;}.reciep-text {color: rgba(0, 0, 0, 0.30);font-family: Source Sans 3;font-style: normal;font-weight: 600;line-height: normal;}.total-title {font-family: Stolzl;font-size: 24px;font-weight: 700;}.tital-price {font-size: 16px;}.product-name {margin-left: 10px;font-family: Stolzl;font-size: 15px;font-weight: 700;}.product-description {margin-left: 10px;font-size: 13px;}.product-price {margin-left: 10px;font-size: 16px;font-weight: 400;}.product-quantity {font-size: 13px;}p {color: #000;font-family: Source Sans 3;font-style: normal;font-weight: 600;line-height: normal;}.button {width: 84%;margin: auto;display: flex;padding: 16px 40px;justify-content: center;align-items: center;gap: 8px;border-radius: 5px;background: #000;color: #FFF;}"
+body.appendChild(stylesheet)
+console.log(body)
 const modalDiv = document.createElement("div");
 modalDiv.setAttribute("id", "cart")
 modalDiv.setAttribute("index", "-1")
@@ -11,7 +15,7 @@ modalDiv.setAttribute("aria-labelledby", "exampleModalLabel")
 modalDiv.setAttribute("aria-hidden", "true")
 modalDiv.setAttribute("class", "modal fade")
 
-modalDiv.innerHTML = '<div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="exampleModalLabel">Cart</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div><div class="modal-body"><table class="show-cart table"><thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Quantity</th><th>Delete</th></tr></thead><tbody class="show-cart-body"></tbody></table><div>Total price: $<span class="total-cart"></span></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button><button id="validate-cart" type="button" class="btn btn-primary">Order now</button></div></div></div>'
+modalDiv.innerHTML = '<div class="global-container"><p class="title">Panier</p><div class="container-product"><div class="container-product-bis"><img class="product-pict" src="collar.png" alt="product" /><div class="container-product-text"><p class="product-name">Jag GPS S2 - Jaune</p><p class="product-description">Abonnement start</p><p class="product-price">108,00 &euro;</p></div></div><p class="product-quantity">Qut : 1</p><img class="trash-pict" src="trash.png" alt="trash" /></div><div class="container-receipe"><div class="container-sub-reciepe"><p class="reciep-text">Frais D\'activitation</p><p class="reciep-text">5,00&euro;</p></div><div class="container-sub-reciepe"><p class="reciep-text">Livraison</p><p class="reciep-text">GRATUIT</p></div></div><div class="container-total"><p class="total-title">Total</p><p class="total-price">133,00&euro;</p></div><button id="validate-cart" class="button">Finaliser la commande</button></div>'
 body.appendChild(modalDiv)
 
 class Product {
@@ -199,7 +203,7 @@ const createCardTableProduct = (productCart) => {
     const name = document.createElement('div')
     name.textContent = productCart.name;
     const price = document.createElement('div')
-    price.textContent = productCart.price + " €";
+    price.textContent = productCart.price + " &euro;";
     const countDiv = document.createElement('div')
     countDiv.classList.add('quantity')
     const buttonMinus = document.createElement('button')
