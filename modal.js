@@ -171,7 +171,7 @@ const constructProductList = async () => {
         price.textContent = product.prices[0].price + product.prices[0].currency
         const button = document.createElement('a')
         button.href = "#"
-        button.setAttribute('data-name', product.metadata ? product.metadata.name : product.name)
+        button.setAttribute('data-name', product.name)
         button.setAttribute('data-price', product.prices[0].price)
         button.setAttribute('data-image', product.image ?? "")
         button.classList.add("add-to-cart", "btn", "btn-primary")
