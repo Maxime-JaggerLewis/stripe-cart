@@ -125,7 +125,7 @@ class ShoppingCart {
     }
 
     getCartStripeUrl() {
-        const answer = fetch("http://0.0.0.0:3000/stripe/create-checkout-session", {
+        const answer = fetch("https://api.jagger-tracker.com/stripe/create-checkout-session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ cart: this.items, mode: 'payment' })
@@ -135,7 +135,7 @@ class ShoppingCart {
 }
 
 const getProductsFromStripe = async () => {
-    const answer = await fetch("http://0.0.0.0:3000/stripe/products?livemode=false", {
+    const answer = await fetch("https://api.jagger-tracker.com/stripe/products?livemode=false", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     })
@@ -148,7 +148,6 @@ const shoppingCart = new ShoppingCart();
 const constructProductList = async () => {
     const products = await getProductsFromStripe()
     const productJSON = await products.json();
-    console.log(productJSON)
     const divProductList = document.getElementsByClassName('product-list')[0];
 
     for (const product of productJSON) {
